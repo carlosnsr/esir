@@ -14,14 +14,15 @@ defmodule Esir.Mixfile do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:elastix, :logger]
+      extra_applications: [:elastix, :logger, :nimble_csv]
     ]
   end
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:elastix, "~> 0.5.0"}
+      {:elastix, "~> 0.5.0"},
+      {:nimble_csv, "~> 0.3"}
     ]
   end
 end
