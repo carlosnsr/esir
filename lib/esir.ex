@@ -42,12 +42,9 @@ defmodule Esir do
   end
 
   defp set_up do
-    {:ok, %HTTPoison.Response{status_code: 200}} = Index.create(@url, @index, %{})
-
+    Index.create(@url, @index, %{}) |> success?()
     mapping = Formatter.mapping(%Restaurant{})
-    {:ok, %HTTPoison.Response{status_code: 200}} =
-      Elastix.Mapping.put(@url, @index, @doc_type, mapping)
-
+    Elastix.Mapping.put(@url, @index, @doc_type, mapping) |> success?()
     :ok
   end
 
@@ -70,5 +67,44 @@ defmodule Esir do
     |> Enum.map(fn (list) ->
       Elastix.Bulk.post(@url, List.flatten(list), index: @index, type: @doc_type)
     end)
+  end
+
+  def restaurants_near_office do
+    criteria = %{
+      sort: [
+        %{id: :asc}
+      ],
+      size: 100,
+      query: %{
+        bool: %{
+          must: %{ match_all: %{} },
+          filter: %{
+            geo_distance: %{
+              distance: "16km",
+              location: %{
+                lat: 39.7501158,
+                lon: -104.9989422
+              }
+            }
+          }
+        }
+      }
+    }
+
+    Elastix.Search.search(@url, @index, [@doc_type], criteria)
+    |> get_body()
+    |> get_hits()
+    |> Enum.map(&show_hit/1)
+  end
+
+  defp success?({:ok, %HTTPoison.Response{status_code: 200}}), do: :ok
+  # purposefully left out other matches so that we get an error
+
+  defp get_body({:ok, %HTTPoison.Response{status_code: 200, body: body}}), do: body
+
+  defp get_hits(%{"hits" => %{"hits" => hits}}), do: hits
+
+  defp show_hit(%{"_source" => %{"id" => id, "name" => name, "address" => address}}) do
+    %{id: id, name: name, address: address}
   end
 end

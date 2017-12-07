@@ -8,8 +8,7 @@ defmodule Esir.Restaurant do
       state: nil,
       country: nil,
       neighbourhood: nil,
-      latitude: nil,
-      longitude: nil,
+      location: nil,
       cuisine: nil
 
   alias Esir.Restaurant

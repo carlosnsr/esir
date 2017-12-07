@@ -81,8 +81,10 @@ defmodule Esir.Loader do
       state: state,
       country: country,
       neighbourhood: neighbourhood,
-      latitude: latitude,
-      longitude: longitude,
+      location: %{
+        lat: latitude,
+        lon: longitude
+      },
       cuisine: cuisine
     }
   end
