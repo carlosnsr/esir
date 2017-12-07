@@ -72,8 +72,8 @@ defmodule Esir.Loader do
     cuisine
     | _]
   ) do
-    %{
-      restaurant_id: restaurant_id,
+    %Esir.Restaurant{
+      id: restaurant_id,
       name: name,
       address: address,
       phone: phone,
