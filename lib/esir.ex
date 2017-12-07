@@ -70,43 +70,42 @@ defmodule Esir do
   end
 
   def restaurants_near_office do
-    criteria = %{
-      sort: [%{id: :asc}],
-      size: 100,
-      query: %{
-        bool: %{
-          must: %{ match_all: %{} },
-          filter: %{
-            geo_distance: %{
-              distance: "16km",
-              location: %{
-                lat: 39.7501158,
-                lon: -104.9989422
-              }
+    query = %{
+      bool: %{
+        must: %{ match_all: %{} },
+        filter: %{
+          geo_distance: %{
+            distance: "16km",
+            location: %{
+              lat: 39.7501158,
+              lon: -104.9989422
             }
           }
         }
       }
     }
 
-    Elastix.Search.search(@url, @index, [@doc_type], criteria)
-    |> get_body()
-    |> get_hits()
-    |> Enum.map(&show_hit/1)
+    run_search(query)
   end
 
   def german_restaurants_in_california do
+    query = %{
+      bool: %{
+        must: [
+          %{ match: %{ state: "CA" }},
+          %{ match: %{ cuisine: "German" }}
+        ]
+      }
+    }
+
+    run_search(query)
+  end
+
+  def run_search(query) do
     criteria = %{
       sort: [%{id: :asc}],
       size: 100,
-      query: %{
-        bool: %{
-          must: [
-            %{ match: %{ state: "CA" }},
-            %{ match: %{ cuisine: "German" }}
-          ]
-        }
-      }
+      query: query
     }
 
     Elastix.Search.search(@url, @index, [@doc_type], criteria)
