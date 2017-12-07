@@ -101,6 +101,14 @@ defmodule Esir do
     run_search(query)
   end
 
+  def restaurants_with_phone_numbers_ending_1111 do
+    query = %{
+      regexp: %{ phone: ".*1111" }
+    }
+
+    run_search(query)
+  end
+
   def run_search(query) do
     criteria = %{
       sort: [%{id: :asc}],
@@ -121,7 +129,7 @@ defmodule Esir do
 
   defp get_hits(%{"hits" => %{"hits" => hits}}), do: hits
 
-  defp show_hit(%{"_source" => %{"id" => id, "name" => name, "address" => address}}) do
-    %{id: id, name: name, address: address}
+  defp show_hit(%{"_source" => %{"id" => id, "name" => name, "address" => address, "phone" => phone}}) do
+    %{id: id, name: name, address: address, phone: phone}
   end
 end
