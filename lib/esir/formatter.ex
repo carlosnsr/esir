@@ -1,11 +1,10 @@
 defmodule Esir.Formatter do
   alias Esir.Restaurant
 
+  def bulk_delete(%Restaurant{id: id}), do: [%{delete: %{_id: id}}]
+
   def bulk_insert(%Restaurant{id: id} = restaurant) do
-    [
-      %{index: %{_id: id}},
-      restaurant
-    ]
+    [%{index: %{_id: id}}, restaurant]
   end
 
   def mapping(%Restaurant{} = _restaurant) do
@@ -20,8 +19,7 @@ defmodule Esir.Formatter do
         country: %{type: "text"},
         neighbourhood: %{type: "text"},
         location: %{type: "geo_point"},
-        cuisine: %{type: "text"},
-        closed: %{type: "boolean"}
+        cuisine: %{type: "text"}
       }
     }
   end

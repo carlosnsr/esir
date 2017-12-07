@@ -83,12 +83,7 @@ defmodule Esir.Loader do
       neighbourhood: neighbourhood,
       latitude: latitude,
       longitude: longitude,
-      cuisine: cuisine,
-      closed: closed?(name)
+      cuisine: cuisine
     }
-  end
-
-  defp closed?(restaurant_name) do
-    String.ends_with?(restaurant_name, "\n- CLOSED")
   end
 end

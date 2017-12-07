@@ -4,6 +4,7 @@ defmodule Esir do
     Esir.reset
     Esir.initialize
     Esir.index_restaurants
+    Esir.delete_closed_restaurants
   """
 
   # elasticsearch url
@@ -14,6 +15,15 @@ defmodule Esir do
 
   alias Elastix.Index
   alias Esir.Formatter
+  alias Esir.Restaurant
+
+  def run do
+    reset()
+    initialize()
+    index_restaurants()
+    delete_closed_restaurants()
+    :ok
+  end
 
   def reset do
     case Index.delete(@url, @index) do
@@ -34,7 +44,7 @@ defmodule Esir do
   defp set_up do
     {:ok, %HTTPoison.Response{status_code: 200}} = Index.create(@url, @index, %{})
 
-    mapping = Formatter.mapping(%Esir.Restaurant{})
+    mapping = Formatter.mapping(%Restaurant{})
     {:ok, %HTTPoison.Response{status_code: 200}} =
       Elastix.Mapping.put(@url, @index, @doc_type, mapping)
 
@@ -45,6 +55,17 @@ defmodule Esir do
     @filename
     |> Esir.Loader.parse()
     |> Stream.map(&Formatter.bulk_insert/1)
+    |> Stream.chunk_every(1000)
+    |> Enum.map(fn (list) ->
+      Elastix.Bulk.post(@url, List.flatten(list), index: @index, type: @doc_type)
+    end)
+  end
+
+  def delete_closed_restaurants do
+    @filename
+    |> Esir.Loader.parse()
+    |> Stream.filter(&Restaurant.closed?/1)
+    |> Stream.map(&Formatter.bulk_delete/1)
     |> Stream.chunk_every(1000)
     |> Enum.map(fn (list) ->
       Elastix.Bulk.post(@url, List.flatten(list), index: @index, type: @doc_type)

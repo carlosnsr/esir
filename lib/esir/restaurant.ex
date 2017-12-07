@@ -10,6 +10,11 @@ defmodule Esir.Restaurant do
       neighbourhood: nil,
       latitude: nil,
       longitude: nil,
-      cuisine: nil,
-      closed: false
+      cuisine: nil
+
+  alias Esir.Restaurant
+
+  def closed?(%Restaurant{name: name}) do
+    String.ends_with?(name, "\n- CLOSED")
+  end
 end
