@@ -71,9 +71,7 @@ defmodule Esir do
 
   def restaurants_near_office do
     criteria = %{
-      sort: [
-        %{id: :asc}
-      ],
+      sort: [%{id: :asc}],
       size: 100,
       query: %{
         bool: %{
@@ -87,6 +85,26 @@ defmodule Esir do
               }
             }
           }
+        }
+      }
+    }
+
+    Elastix.Search.search(@url, @index, [@doc_type], criteria)
+    |> get_body()
+    |> get_hits()
+    |> Enum.map(&show_hit/1)
+  end
+
+  def german_restaurants_in_california do
+    criteria = %{
+      sort: [%{id: :asc}],
+      size: 100,
+      query: %{
+        bool: %{
+          must: [
+            %{ match: %{ state: "CA" }},
+            %{ match: %{ cuisine: "German" }}
+          ]
         }
       }
     }
