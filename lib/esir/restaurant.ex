@@ -16,4 +16,21 @@ defmodule Esir.Restaurant do
   def closed?(%Restaurant{name: name}) do
     String.ends_with?(name, "\n- CLOSED")
   end
+
+  def mapping() do
+    %{
+      properties: %{
+        id: %{type: "integer"},
+        name: %{type: "text"},
+        address: %{type: "text"},
+        phone: %{type: "text"},
+        city: %{type: "text"},
+        state: %{type: "text"},
+        country: %{type: "text"},
+        neighbourhood: %{type: "text"},
+        location: %{type: "geo_point"},
+        cuisine: %{type: "text"}
+      }
+    }
+  end
 end

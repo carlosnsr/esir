@@ -42,7 +42,7 @@ defmodule Esir do
 
   defp set_up do
     Index.create(@url, @index, %{}) |> success?()
-    mapping = Formatter.mapping(%Restaurant{})
+    mapping = Restaurant.mapping()
     Elastix.Mapping.put(@url, @index, @doc_type, mapping) |> success?()
     :ok
   end
