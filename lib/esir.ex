@@ -1,10 +1,7 @@
 defmodule Esir do
   @moduledoc """
   To run:
-    Esir.reset
-    Esir.initialize
-    Esir.index_restaurants
-    Esir.delete_closed_restaurants
+    Esir.run()
   """
 
   # elasticsearch url
@@ -14,8 +11,10 @@ defmodule Esir do
   @doc_type "restaurant"
 
   alias Elastix.Index
+  alias Elastix.Bulk
   alias Esir.Formatter
   alias Esir.Restaurant
+  alias HTTPoison.Response
 
   def run do
     reset()
@@ -27,8 +26,8 @@ defmodule Esir do
 
   def reset do
     case Index.delete(@url, @index) do
-      {:ok, %HTTPoison.Response{status_code: 200}} -> :ok
-      {:ok, %HTTPoison.Response{body: %{"error" => %{"reason" => "no such index"}}}} -> :ok
+      {:ok, %Response{status_code: 200}} -> :ok
+      {:ok, %Response{ body: %{"error" => %{"reason" => "no such index"}}} } -> :ok
     end
     initialize()
   end
@@ -54,7 +53,7 @@ defmodule Esir do
     |> Stream.map(&Formatter.bulk_insert/1)
     |> Stream.chunk_every(1000)
     |> Enum.map(fn (list) ->
-      Elastix.Bulk.post(@url, List.flatten(list), index: @index, type: @doc_type)
+      Bulk.post(@url, List.flatten(list), index: @index, type: @doc_type)
     end)
   end
 
@@ -65,7 +64,7 @@ defmodule Esir do
     |> Stream.map(&Formatter.bulk_delete/1)
     |> Stream.chunk_every(1000)
     |> Enum.map(fn (list) ->
-      Elastix.Bulk.post(@url, List.flatten(list), index: @index, type: @doc_type)
+      Bulk.post(@url, List.flatten(list), index: @index, type: @doc_type)
     end)
   end
 
@@ -82,14 +81,21 @@ defmodule Esir do
     |> Enum.map(&show_hit/1)
   end
 
-  defp success?({:ok, %HTTPoison.Response{status_code: 200}}), do: :ok
+  defp success?({:ok, %Response{status_code: 200}}), do: :ok
   # purposefully left out other matches so that we get an error
 
-  defp get_body({:ok, %HTTPoison.Response{status_code: 200, body: body}}), do: body
+  defp get_body({:ok, %Response{status_code: 200, body: body}}), do: body
 
   defp get_hits(%{"hits" => %{"hits" => hits}}), do: hits
 
-  defp show_hit(%{"_source" => %{"id" => id, "name" => name, "address" => address, "phone" => phone}}) do
+  defp show_hit(%{
+    "_source" => %{
+      "id" => id,
+      "name" => name,
+      "address" => address,
+      "phone" => phone
+    }
+  }) do
     %{id: id, name: name, address: address, phone: phone}
   end
 end
